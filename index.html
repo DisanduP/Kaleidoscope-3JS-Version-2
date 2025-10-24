@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium 3D Kaleidoscope</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            background: #000;
+        }
+        #canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+        .controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(10, 10, 20, 0.85);
+            padding: 24px;
+            border-radius: 16px;
+            color: white;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            max-width: 320px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+        .controls h2 {
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .control-group {
+            margin-bottom: 18px;
+        }
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #bbb;
+            font-weight: 600;
+        }
+        .control-group input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            outline: none;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        .control-group input[type="range"]:hover {
+            opacity: 1;
+        }
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.6);
+            transition: transform 0.2s;
+        }
+        .control-group input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+        .control-group input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.6);
+        }
+        .control-group select {
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(30, 30, 40, 0.9);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .control-group select:hover {
+            border-color: #667eea;
+            background: rgba(40, 40, 50, 0.9);
+        }
+        .value-display {
+            display: inline-block;
+            float: right;
+            color: #667eea;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+        .checkbox-group label {
+            margin: 0;
+            cursor: pointer;
+            user-select: none;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .info {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(10, 10, 20, 0.85);
+            padding: 16px 20px;
+            border-radius: 12px;
+            color: #aaa;
+            font-size: 12px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+        }
+        .title {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(10, 10, 20, 0.85);
+            padding: 16px 24px;
+            border-radius: 12px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+        }
+        .title h1 {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <div class="title">
+        <h1>✨ Kaleidoscope 3D</h1>
+    </div>
+    
+    <div class="controls">
+        <h2>🎨 Controls</h2>
+        
+        <div class="control-group">
+            <label>Mirrors <span class="value-display" id="mirrorsValue">8</span></label>
+            <input type="range" id="mirrors" min="3" max="16" value="8" step="1">
+        </div>
+        
+        <div class="control-group">
+            <label>Rotation Speed <span class="value-display" id="speedValue">1.0x</span></label>
+            <input type="range" id="speed" min="0" max="5" value="1" step="0.1">
+        </div>
+        
+        <div class="control-group">
+            <label>Complexity <span class="value-display" id="complexityValue">15</span></label>
+            <input type="range" id="complexity" min="5" max="40" value="15" step="1">
+        </div>
+        
+        <div class="control-group">
+            <label>Glow Intensity <span class="value-display" id="glowValue">0.5</span></label>
+            <input type="range" id="glow" min="0" max="1" value="0.5" step="0.1">
+        </div>
+        
+        <div class="control-group">
+            <label>Shape Type</label>
+            <select id="pattern">
+                <option value="spheres">Spheres</option>
+                <option value="boxes">Boxes</option>
+                <option value="toruses">Toruses</option>
+                <option value="octahedrons">Octahedrons</option>
+                <option value="mixed">Mixed Shapes</option>
+            </select>
+        </div>
+        
+        <div class="control-group">
+            <label>Color Scheme</label>
+            <select id="colorScheme">
+                <option value="rainbow">Rainbow</option>
+                <option value="neon">Neon Glow</option>
+                <option value="pastel">Pastel Dream</option>
+                <option value="fire">Fire & Ice</option>
+                <option value="ocean">Deep Ocean</option>
+                <option value="cyber">Cyberpunk</option>
+                <option value="sunset">Sunset Vibes</option>
+            </select>
+        </div>
+        
+        <div class="checkbox-group">
+            <input type="checkbox" id="autoRotate" checked>
+            <label for="autoRotate">Auto Rotate</label>
+        </div>
+        
+        <div class="checkbox-group">
+            <input type="checkbox" id="particles" checked>
+            <label for="particles">Particles</label>
+        </div>
+        
+        <button id="randomize">🎲 Randomize Everything</button>
+    </div>
+    
+    <div class="info">
+        🖱️ Drag to rotate • 🔍 Scroll to zoom<br>
+        Made with Three.js & WebGL
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer;
+        let kaleidoscopeGroup, objectsGroup, particlesGroup;
+        let mouseX = 0, mouseY = 0;
+        let targetRotationX = 0, targetRotationY = 0;
+        let isDragging = false;
+        let lights = [];
+        let time = 0;
+        
+        const config = {
+            mirrors: 8,
+            speed: 1,
+            complexity: 15,
+            pattern: 'spheres',
+            colorScheme: 'rainbow',
+            autoRotate: true,
+            particles: true,
+            glow: 0.5
+        };
+
+        const colorSchemes = {
+            rainbow: [0xff0000, 0xff7f00, 0xffff00, 0x00ff00, 0x0000ff, 0x8b00ff],
+            neon: [0xff006e, 0x00f5ff, 0xffbe0b, 0x8338ec, 0x3a86ff, 0x06ffa5],
+            pastel: [0xffd6ff, 0xe7c6ff, 0xc8b6ff, 0xb8c0ff, 0xbbd0ff, 0xffc8dd],
+            fire: [0xff0000, 0xff4500, 0xff8c00, 0xffd700, 0x00bfff, 0x4169e1],
+            ocean: [0x001f3f, 0x0074d9, 0x7fdbff, 0x39cccc, 0x3d9970, 0x01ff70],
+            cyber: [0xff00ff, 0x00ffff, 0xff1493, 0x00ff00, 0xffff00, 0xff69b4],
+            sunset: [0xff6b6b, 0xffa07a, 0xffd700, 0xff69b4, 0x9370db, 0x4a90e2]
+        };
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+            scene.fog = new THREE.FogExp2(0x000000, 0.015);
+            
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 18;
+            
+            renderer = new THREE.WebGLRenderer({ 
+                canvas: document.getElementById('canvas'), 
+                antialias: true,
+                alpha: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            
+            kaleidoscopeGroup = new THREE.Group();
+            scene.add(kaleidoscopeGroup);
+            
+            createLights();
+            createKaleidoscope();
+            createParticles();
+            
+            setupControls();
+            setupEventListeners();
+            animate();
+        }
+
+        function createLights() {
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+            scene.add(ambientLight);
+            
+            const colors = [0xff00ff, 0x00ffff, 0xffff00];
+            for (let i = 0; i < 3; i++) {
+                const light = new THREE.PointLight(colors[i], 2, 50);
+                const angle = (i / 3) * Math.PI * 2;
+                light.position.set(
+                    Math.cos(angle) * 15,
+                    Math.sin(angle) * 10,
+                    Math.sin(angle) * 15
+                );
+                scene.add(light);
+                lights.push(light);
+            }
+        }
+
+        function createKaleidoscope() {
+            if (objectsGroup) {
+                kaleidoscopeGroup.remove(objectsGroup);
+            }
+            
+            objectsGroup = new THREE.Group();
+            
+            const colors = colorSchemes[config.colorScheme];
+            const angleStep = (Math.PI * 2) / config.mirrors;
+            
+            for (let mirror = 0; mirror < config.mirrors; mirror++) {
+                const mirrorGroup = new THREE.Group();
+                
+                for (let i = 0; i < config.complexity; i++) {
+                    let geometry, material;
+                    const color = colors[i % colors.length];
+                    const size = 0.3 + Math.random() * 0.4;
+                    
+                    if (config.pattern === 'spheres') {
+                        geometry = new THREE.SphereGeometry(size, 32, 32);
+                    } else if (config.pattern === 'boxes') {
+                        geometry = new THREE.BoxGeometry(size, size, size);
+                    } else if (config.pattern === 'toruses') {
+                        geometry = new THREE.TorusGeometry(size, size * 0.3, 16, 32);
+                    } else if (config.pattern === 'octahedrons') {
+                        geometry = new THREE.OctahedronGeometry(size);
+                    } else {
+                        const shapes = [
+                            new THREE.SphereGeometry(size, 32, 32),
+                            new THREE.BoxGeometry(size, size, size),
+                            new THREE.TorusGeometry(size, size * 0.3, 16, 32),
+                            new THREE.OctahedronGeometry(size)
+                        ];
+                        geometry = shapes[Math.floor(Math.random() * shapes.length)];
+                    }
+                    
+                    material = new THREE.MeshStandardMaterial({
+                        color: color,
+                        emissive: color,
+                        emissiveIntensity: config.glow,
+                        metalness: 0.8,
+                        roughness: 0.2,
+                        transparent: true,
+                        opacity: 0.9
+                    });
+                    
+                    const mesh = new THREE.Mesh(geometry, material);
+                    
+                    const radius = 3 + Math.random() * 6;
+                    const angle = Math.random() * angleStep;
+                    mesh.position.x = Math.cos(angle) * radius;
+                    mesh.position.y = (Math.random() - 0.5) * 10;
+                    mesh.position.z = Math.sin(angle) * radius;
+                    
+                    mesh.userData.rotationSpeed = {
+                        x: (Math.random() - 0.5) * 0.03,
+                        y: (Math.random() - 0.5) * 0.03,
+                        z: (Math.random() - 0.5) * 0.03
+                    };
+                    
+                    mesh.userData.floatSpeed = Math.random() * 0.02;
+                    mesh.userData.floatOffset = Math.random() * Math.PI * 2;
+                    
+                    mirrorGroup.add(mesh);
+                }
+                
+                mirrorGroup.rotation.y = mirror * angleStep;
+                objectsGroup.add(mirrorGroup);
+            }
+            
+            kaleidoscopeGroup.add(objectsGroup);
+        }
+
+        function createParticles() {
+            if (particlesGroup) {
+                scene.remove(particlesGroup);
+            }
+            
+            particlesGroup = new THREE.Group();
+            const particleCount = 200;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const geometry = new THREE.SphereGeometry(0.05, 8, 8);
+                const material = new THREE.MeshBasicMaterial({
+                    color: 0xffffff,
+                    transparent: true,
+                    opacity: Math.random() * 0.6 + 0.2
+                });
+                
+                const particle = new THREE.Mesh(geometry, material);
+                particle.position.set(
+                    (Math.random() - 0.5) * 40,
+                    (Math.random() - 0.5) * 40,
+                    (Math.random() - 0.5) * 40
+                );
+                
+                particle.userData.velocity = new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.02,
+                    (Math.random() - 0.5) * 0.02,
+                    (Math.random() - 0.5) * 0.02
+                );
+                
+                particlesGroup.add(particle);
+            }
+            
+            scene.add(particlesGroup);
+            particlesGroup.visible = config.particles;
+        }
+
+        function setupControls() {
+            const mirrorsSlider = document.getElementById('mirrors');
+            const speedSlider = document.getElementById('speed');
+            const complexitySlider = document.getElementById('complexity');
+            const glowSlider = document.getElementById('glow');
+            const patternSelect = document.getElementById('pattern');
+            const colorSchemeSelect = document.getElementById('colorScheme');
+            const autoRotateCheck = document.getElementById('autoRotate');
+            const particlesCheck = document.getElementById('particles');
+            const randomizeBtn = document.getElementById('randomize');
+            
+            mirrorsSlider.addEventListener('input', (e) => {
+                config.mirrors = parseInt(e.target.value);
+                document.getElementById('mirrorsValue').textContent = config.mirrors;
+                createKaleidoscope();
+            });
+            
+            speedSlider.addEventListener('input', (e) => {
+                config.speed = parseFloat(e.target.value);
+                document.getElementById('speedValue').textContent = config.speed.toFixed(1) + 'x';
+            });
+            
+            complexitySlider.addEventListener('input', (e) => {
+                config.complexity = parseInt(e.target.value);
+                document.getElementById('complexityValue').textContent = config.complexity;
+                createKaleidoscope();
+            });
+            
+            glowSlider.addEventListener('input', (e) => {
+                config.glow = parseFloat(e.target.value);
+                document.getElementById('glowValue').textContent = config.glow.toFixed(1);
+                updateGlow();
+            });
+            
+            patternSelect.addEventListener('change', (e) => {
+                config.pattern = e.target.value;
+                createKaleidoscope();
+            });
+            
+            colorSchemeSelect.addEventListener('change', (e) => {
+                config.colorScheme = e.target.value;
+                createKaleidoscope();
+            });
+            
+            autoRotateCheck.addEventListener('change', (e) => {
+                config.autoRotate = e.target.checked;
+            });
+            
+            particlesCheck.addEventListener('change', (e) => {
+                config.particles = e.target.checked;
+                particlesGroup.visible = config.particles;
+            });
+            
+            randomizeBtn.addEventListener('click', () => {
+                config.mirrors = Math.floor(Math.random() * 14) + 3;
+                config.speed = Math.random() * 4 + 0.5;
+                config.complexity = Math.floor(Math.random() * 30) + 10;
+                config.glow = Math.random() * 0.8 + 0.2;
+                config.pattern = ['spheres', 'boxes', 'toruses', 'octahedrons', 'mixed'][Math.floor(Math.random() * 5)];
+                config.colorScheme = Object.keys(colorSchemes)[Math.floor(Math.random() * Object.keys(colorSchemes).length)];
+                
+                document.getElementById('mirrors').value = config.mirrors;
+                document.getElementById('mirrorsValue').textContent = config.mirrors;
+                document.getElementById('speed').value = config.speed;
+                document.getElementById('speedValue').textContent = config.speed.toFixed(1) + 'x';
+                document.getElementById('complexity').value = config.complexity;
+                document.getElementById('complexityValue').textContent = config.complexity;
+                document.getElementById('glow').value = config.glow;
+                document.getElementById('glowValue').textContent = config.glow.toFixed(1);
+                document.getElementById('pattern').value = config.pattern;
+                document.getElementById('colorScheme').value = config.colorScheme;
+                
+                createKaleidoscope();
+            });
+        }
+
+        function updateGlow() {
+            objectsGroup.children.forEach(mirrorGroup => {
+                mirrorGroup.children.forEach(mesh => {
+                    mesh.material.emissiveIntensity = config.glow;
+                });
+            });
+        }
+
+        function setupEventListeners() {
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+            
+            document.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    const deltaX = e.clientX - mouseX;
+                    const deltaY = e.clientY - mouseY;
+                    
+                    targetRotationY += deltaX * 0.005;
+                    targetRotationX += deltaY * 0.005;
+                    
+                    mouseX = e.clientX;
+                    mouseY = e.clientY;
+                }
+            });
+            
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+            
+            document.addEventListener('wheel', (e) => {
+                camera.position.z += e.deltaY * 0.01;
+                camera.position.z = Math.max(5, Math.min(35, camera.position.z));
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            time += 0.01;
+            
+            if (config.autoRotate) {
+                kaleidoscopeGroup.rotation.y += 0.003 * config.speed;
+                kaleidoscopeGroup.rotation.x = Math.sin(time * 0.5) * 0.1;
+            }
+            
+            kaleidoscopeGroup.rotation.x += (targetRotationX - kaleidoscopeGroup.rotation.x) * 0.05;
+            kaleidoscopeGroup.rotation.y += (targetRotationY - kaleidoscopeGroup.rotation.y) * 0.05;
+            
+            objectsGroup.children.forEach(mirrorGroup => {
+                mirrorGroup.children.forEach(mesh => {
+                    mesh.rotation.x += mesh.userData.rotationSpeed.x * config.speed;
+                    mesh.rotation.y += mesh.userData.rotationSpeed.y * config.speed;
+                    mesh.rotation.z += mesh.userData.rotationSpeed.z * config.speed;
+                    
+                    mesh.position.y += Math.sin(time * mesh.userData.floatSpeed + mesh.userData.floatOffset) * 0.01;
+                });
+            });
+            
+            lights.forEach((light, i) => {
+                const angle = time + (i / lights.length) * Math.PI * 2;
+                light.position.x = Math.cos(angle) * 15;
+                light.position.z = Math.sin(angle) * 15;
+                light.position.y = Math.sin(time * 0.5 + i) * 10;
+                light.intensity = 1.5 + Math.sin(time * 2 + i) * 0.5;
+            });
+            
+            if (config.particles && particlesGroup) {
+                particlesGroup.children.forEach(particle => {
+                    particle.position.add(particle.userData.velocity);
+                    
+                    ['x', 'y', 'z'].forEach(axis => {
+                        if (Math.abs(particle.position[axis]) > 20) {
+                            particle.position[axis] *= -1;
+                        }
+                    });
+                    
+                    particle.material.opacity = 0.3 + Math.sin(time * 2 + particle.position.x) * 0.3;
+                });
+                
+                particlesGroup.rotation.y += 0.0005;
+            }
+            
+            renderer.render(scene, camera);
+        }
+
+        init();
+    </script>
+</body>
+</html>
